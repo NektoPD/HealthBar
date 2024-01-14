@@ -6,42 +6,32 @@ using UnityEngine.UI;
 
 public class Health : MonoBehaviour
 {
-    [SerializeField] private TMP_Text _text;
-    [SerializeField] private Slider _slider;
-    [SerializeField] private Slider _smoothSlider;
-
     public event UnityAction HealthEmptied;
+    public event UnityAction HealthChanged;
 
-    private float _speed = 10;
     private float _maxAmount = 100;
     private float _minAmount = 0;
     private float _currentAmount;
 
-    private void Start()
+    public float CurrentAmount => _currentAmount;
+    public float MaxAmount => _maxAmount;
+
+    private void Awake()
     {
         _currentAmount = _maxAmount;
-        _slider.maxValue = _maxAmount;
-        _smoothSlider.maxValue = _maxAmount;
-        _smoothSlider.value = _maxAmount;
-        ChangeText();
-        ChangeSlider();
     }
 
     public void Increace(int amount)
     {
-        if (_currentAmount + amount <= _maxAmount)
+        if (_currentAmount + amount < _maxAmount)
         {
             _currentAmount += amount;
-            ChangeText();
-            ChangeSlider();
-            StartCoroutine(ChangeSmoothSlider());
+            HealthChanged?.Invoke();
         }
         else
         {
             _currentAmount = _maxAmount;
-            ChangeText();
-            ChangeSlider();
-            StartCoroutine(ChangeSmoothSlider());
+            HealthChanged?.Invoke();
         }
     }
 
@@ -50,34 +40,11 @@ public class Health : MonoBehaviour
         if (_currentAmount > _minAmount)
         {
             _currentAmount -= amount;
-            ChangeText();
-            ChangeSlider();
-            StartCoroutine(ChangeSmoothSlider());
+            HealthChanged?.Invoke();
         }
         else if (_currentAmount <= _minAmount)
         {
-            HealthEmptied.Invoke();
+            HealthEmptied?.Invoke();
         }
-    }
-
-    private void ChangeText()
-    {
-        _text.text = _currentAmount.ToString() + " / " + _maxAmount.ToString();
-    }
-
-    private void ChangeSlider()
-    {
-        _slider.value = _currentAmount;
-    }
-
-    private IEnumerator ChangeSmoothSlider()
-    {
-        while(_smoothSlider.value != _currentAmount)
-        {
-            _smoothSlider.value = Mathf.MoveTowards(_smoothSlider.value, _currentAmount, _speed * Time.deltaTime);
-
-            yield return null;
-        }
-      
     }
 }
